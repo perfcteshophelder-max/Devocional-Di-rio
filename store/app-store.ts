@@ -3,9 +3,14 @@ import { persist } from 'zustand/middleware';
 
 export interface PrayerRequest {
   id: string;
-  text: string;
+  title?: string;
+  description?: string;
   answered: boolean;
-  date: string;
+  createdAt?: string;
+  answeredAt?: string;
+  // Legacy fields for backward compatibility
+  text?: string;
+  date?: string;
 }
 
 export interface DiaryEntry {
@@ -32,7 +37,7 @@ interface AppState {
   // Actions
   toggleSaveDevotional: (id: string) => void;
   markDevotionalCompleted: (id: string) => void;
-  addPrayerRequest: (text: string) => void;
+  addPrayerRequest: (title: string, description?: string) => void;
   togglePrayerAnswered: (id: string) => void;
   deletePrayerRequest: (id: string) => void;
   addDiaryEntry: (text: string) => void;
@@ -64,32 +69,46 @@ export const useAppStore = create<AppState>()(
         return { completedDevotionals: [...state.completedDevotionals, id] };
       }),
 
-      addPrayerRequest: (text) => set((state) => ({
+      addPrayerRequest: (title, description) => set((state) => ({
         prayerRequests: [
-          { id: Date.now().toString(), text, answered: false, date: new Date().toISOString() },
-          ...state.prayerRequests
+          { 
+            id: Date.now().toString(), 
+            title, 
+            description, 
+            answered: false, 
+            createdAt: new Date().toISOString() 
+          },
+          ...(state.prayerRequests || [])
         ]
       })),
 
       togglePrayerAnswered: (id) => set((state) => ({
-        prayerRequests: state.prayerRequests.map(p => 
-          p.id === id ? { ...p, answered: !p.answered } : p
-        )
+        prayerRequests: (state.prayerRequests || []).map(p => {
+          if (p.id === id) {
+            const isNowAnswered = !p.answered;
+            return { 
+              ...p, 
+              answered: isNowAnswered,
+              answeredAt: isNowAnswered ? new Date().toISOString() : undefined
+            };
+          }
+          return p;
+        })
       })),
 
       deletePrayerRequest: (id) => set((state) => ({
-        prayerRequests: state.prayerRequests.filter(p => p.id !== id)
+        prayerRequests: (state.prayerRequests || []).filter(p => p.id !== id)
       })),
 
       addDiaryEntry: (text) => set((state) => ({
         diaryEntries: [
           { id: Date.now().toString(), text, date: new Date().toISOString() },
-          ...state.diaryEntries
+          ...(state.diaryEntries || [])
         ]
       })),
 
       deleteDiaryEntry: (id) => set((state) => ({
-        diaryEntries: state.diaryEntries.filter(d => d.id !== id)
+        diaryEntries: (state.diaryEntries || []).filter(d => d.id !== id)
       })),
 
       startPlan: (planId) => set((state) => {

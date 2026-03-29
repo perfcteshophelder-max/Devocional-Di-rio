@@ -111,7 +111,7 @@ export default function SpiritualDiary() {
                 {/* Timeline dot */}
                 <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-slate-50 bg-primary shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
                   <span className="text-xs font-bold text-white">
-                    {format(new Date(entry.date), "dd", { locale: ptBR })}
+                    {format(new Date(entry.date || new Date().toISOString()), "dd", { locale: ptBR })}
                   </span>
                 </div>
                 
@@ -119,7 +119,7 @@ export default function SpiritualDiary() {
                 <div className="w-[calc(100%-3rem)] md:w-[calc(50%-2.5rem)] p-5 rounded-2xl bg-white border border-slate-100 shadow-sm ml-4 md:ml-0 group-hover:border-primary/20 transition-colors">
                   <div className="flex justify-between items-start mb-3">
                     <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                      {format(new Date(entry.date), "MMMM yyyy", { locale: ptBR })}
+                      {format(new Date(entry.date || new Date().toISOString()), "MMMM yyyy", { locale: ptBR })}
                     </span>
                     <button 
                       onClick={() => deleteDiaryEntry(entry.id)}
